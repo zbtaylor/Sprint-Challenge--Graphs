@@ -11,8 +11,8 @@ world = World()
 
 
 # You may uncomment the smaller graphs for development and testing purposes.
-map_file = "maps/test_line.txt"
-# map_file = "maps/test_cross.txt"
+# map_file = "maps/test_line.txt"
+map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
 # map_file = "maps/test_loop_fork.txt"
 # map_file = "maps/main_maze.txt"
@@ -45,7 +45,7 @@ def traverse():
 
     # start with '?' for each exit so we know we haven't used it yet
     visited[player.current_room.id] = {
-        dir: '?' for dir in player.current_room.get_exits()}
+        direction: '?' for direction in player.current_room.get_exits()}
 
     # while we haven't visited every room
     while len(visited) != len(world.rooms):
@@ -55,13 +55,14 @@ def traverse():
         not_visited = []
 
         # for each available exit in the current room
-        for dir in visited[current_room_id]:
+        for direction in visited[current_room_id]:
             # if we haven't used an exit yet, add it to our list
-            if visited[current_room_id][dir] == "?":
-                not_visited.append(dir)
+            if visited[current_room_id][direction] == "?":
+                not_visited.append(direction)
 
         # if there are exits we haven't used yet
         if len(not_visited) > 0:
+            print("Some exits not visited")
             # randomly choose a direction, add it to path, and travel that way
             next_dir = not_visited[random.randint(0, len(not_visited) - 1)]
             path.append(next_dir)
@@ -72,7 +73,8 @@ def traverse():
             # mark the next room as visited if we haven't been there
             if next_room_id not in visited:
                 next_room_exits = player.current_room.get_exits()
-                visited[next_room_id] = {dir: '?' for dir in next_room_exits}
+                visited[next_room_id] = {
+                    direction: '?' for direction in next_room_exits}
 
             # figure out the direction to the previous room
             prev_room_dir = None
@@ -89,10 +91,41 @@ def traverse():
             # of the room we just traveled to
             visited[next_room_id][prev_room_dir] = current_room_id
 
-        # we've used every available exit in this room already
+        # if we've used every available exit in this room already
         else:
-            # backtrack
-            print("hey")
+            print("Backtracking...")
+            # backtrack to a room that has unused exits
+            # depth first like earliest ancestor?
+            stack = Stack()
+            looked_at = set()
+            path_back = None
+            new_exit_found = False
+
+            stack.push([current_room_id])
+
+            # while we have rooms to search and haven't found an exit
+            while stack.size() > 0 and new_exit_found == False:
+                # pop current path off stack
+                current_path = stack.pop()
+                # grab the last room in the path and make it our "current room"
+                last_room = current_path[0]
+                # mark the current room as having been looked at during our backtrack
+                if last_room not in looked_at:
+                    looked_at.add(last_room)
+                    # for each exit in the current room, see if any haven't been used
+
+                    for dir in visited[last_room]:
+                        # if so, assign the value of the current path to path_back as we're done
+                        if visited[last_room][dir] == "?":
+                            path_back = current_path
+                            new_exit_found = True
+                            break
+                        # otherwise, create a new path by appending the dir to the current path
+                        new_path = current_path + [visited[last_room][dir]]
+                        stack.push(new_path)
+                    # add these new paths to the stack and repeat
+
+            # once we have a path back, convert it from ids to dirs
 
     return path
 
