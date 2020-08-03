@@ -45,13 +45,12 @@ def traverse():
 
     # start with '?' for each exit so we know we haven't used it yet
     visited[player.current_room.id] = {
-        dir: '?' for dir in player.currentRoom.getExits()}
+        dir: '?' for dir in player.current_room.get_exits()}
 
     # while we haven't visited every room
     while len(visited) != len(world.rooms):
         current_room = player.current_room
         current_room_id = current_room.id
-        exits = player.current_room.get_exits()
 
         not_visited = []
 
@@ -95,8 +94,10 @@ def traverse():
             # backtrack
             print("hey")
 
+    return path
 
-traverse()
+
+traversal_path = traverse()
 
 # TRAVERSAL TEST - DO NOT MODIFY
 visited_rooms = set()
